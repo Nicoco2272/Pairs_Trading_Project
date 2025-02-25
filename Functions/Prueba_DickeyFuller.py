@@ -1,8 +1,6 @@
 from statsmodels.tsa.stattools import adfuller
 from Descarga_activos import descargar_datos
 
-data = descargar_datos()
-
 def prueba_estacionaridad(series, name):
     result = adfuller(series)
 
@@ -18,11 +16,12 @@ def prueba_estacionaridad(series, name):
         print(f"P-value es mayor a 0.05 por lo que la serie {name} NO es estacionaria.")
         return True
 
-visa_estacionaria = prueba_estacionaridad(data["V"], "Visa")
-mastercard_estacionaria = prueba_estacionaridad(data["MA"], "Mastercard")
+if __name__ == "__main__":
+    data = descargar_datos()
+    visa_estacionaria = prueba_estacionaridad(data["V"], "Visa")
+    mastercard_estacionaria = prueba_estacionaridad(data["MA"], "Mastercard")
 
-if visa_estacionaria and mastercard_estacionaria:
-    print("Ambas series no son estacionarias. Son aptas para una estrategia de pairs trading.")
-else:
-    print("Al menos una serie es estacionaria. No se recomienda usar estas series para pairs trading.")
-
+    if visa_estacionaria and mastercard_estacionaria:
+        print("Ambas series no son estacionarias. Son aptas para una estrategia de pairs trading.")
+    else:
+        print("Al menos una serie es estacionaria. No se recomienda usar estas series para pairs trading.")
