@@ -4,5 +4,7 @@ numpy==2.2.2
 matplotlib==3.10.0
 seaborn==0.13.2
 statsmodels==0.14.4
+ipython==8.32.0
+
 
 

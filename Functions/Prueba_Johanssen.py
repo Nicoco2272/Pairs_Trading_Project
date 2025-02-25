@@ -1,31 +1,25 @@
-from statsmodels.tsa.vector_ar.vecm import coint_johansen
+import statsmodels.tsa.vector_ar.vecm as vecm
 from Descarga_activos import descargar_datos
-import numpy as np
+from IPython.display import display, Math
 
-data = descargar_datos()
+def prueba_johansen():
+    data = descargar_datos()
 
-def prueba_johansen(data, det_order=-1, k_ar_diff=1):
-    """
-    Ejecuta el test de cointegración de Johansen.
-    det_order = -1 (solo constante)
-    k_ar_diff = 1 (diferencias de primer orden)
-    """
-    johansen_test = coint_johansen(data.values, det_order, k_ar_diff)
+    X = data[["V", "MA"]].dropna()
 
-    print("Valores propios (Eigenvalues):", johansen_test.eig)
-    print("\nEstadísticos de la traza:")
-    for i in range(len(johansen_test.lr1)):
-        print(f"  - r ≤ {i}: {johansen_test.lr1[i]:.4f} (valor crítico {johansen_test.cvt[i, 1]:.4f})")
+    johansen_test = vecm.coint_johansen(X, det_order=0, k_ar_diff=1)
 
-    print("\nEstadísticos del máximo eigenvalor:")
-    for i in range(len(johansen_test.lr2)):
-        print(f"  - r = {i}: {johansen_test.lr2[i]:.4f} (valor crítico {johansen_test.cvm[i, 1]:.4f})")
+    print("Eigenvalue Statistics:", johansen_test.lr1)
+    print("Trace Statistics:", johansen_test.lr2)
+    print("Eigenvalues:", johansen_test.eig)
+    print("Eigenvectors:")
+    print(johansen_test.evec)
 
-    # Evaluar si hay cointegración
-    r = np.where(johansen_test.lr1 > johansen_test.cvt[:, 1])[0]
-    if len(r) > 0:
-        print(f"\nCointegración detectada con r = {r[-1]}")
-    else:
-        print("\nNo se detectó cointegración.")
+    spread_model = johansen_test.evec[:, 0]
+    print(f"\nNuestro modelo de spread es:\n u_t = {spread_model[0]:.5f} * x_t {spread_model[1]: .5f} * y_t")
 
-prueba_johansen(data)
+if __name__ == "__main__":
+    data = descargar_datos()
+    prueba_johansen()
+
+# display(Math(r"u_t = {} x_t + {} y_t".format(spread_model[0], spread_model[1])))
