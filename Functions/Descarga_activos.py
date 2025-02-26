@@ -6,7 +6,7 @@ import seaborn as sns
 sns.set_style("darkgrid")
 
 def descargar_datos(tickers):
-    data = yf.download(tickers, start="2015-01-01", end="2025-02-20")["Close"]
+    data = yf.download(tickers, start="2015-01-01", end="2025-01-20")["Close"]
     data = data[tickers]
     return data
 

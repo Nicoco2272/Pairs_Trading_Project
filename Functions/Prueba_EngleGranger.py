@@ -12,6 +12,10 @@ def regresion_ols(data):
     model = sm.OLS(y, X).fit()
 
     print(model.summary())
+
+    hedge_ratio = model.params[tickers[1]]
+    print(f"\nEl Hedge Ratio es {hedge_ratio:.4f} {tickers[1]} por 1 de {tickers[0]}\n")
+
     return model.resid
 
 def prueba_estacionaridad_residuos(residuales):

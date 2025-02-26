@@ -7,6 +7,7 @@ def main():
 
     tickers = ["V", "MA"]
     data = descargar_datos(tickers)
+    graficar_datos(data, tickers)
 
     verificar_estacionaridad_pares(data)
 
@@ -14,9 +15,8 @@ def main():
 
     prueba_estacionaridad_residuos(residuales)
 
-    prueba_johansen(data)
+    spread, spread_norm = prueba_johansen(data)
 
-    graficar_datos(data, tickers)
 
 if __name__ == "__main__":
     main()
