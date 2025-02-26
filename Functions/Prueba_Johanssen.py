@@ -20,17 +20,25 @@ def prueba_johansen(data, plot_spread=True):
 
     spread = spread_model[0] * data[tickers[1]] + spread_model[1] * data[tickers[0]]
 
+    mu = np.mean(spread)
+    sigma = np.std(spread)
+    spread_norm = (spread - mu) / sigma
+
     if plot_spread:
         plt.figure(figsize=(12, 6))
-        plt.plot(data.index, spread, label="Spread", color="blue")
-        plt.axhline(y=np.mean(spread), color='red', linestyle='--', label="Media del spread")
+        plt.plot(data.index, spread_norm, label="Spread Normalizado", color="blue")
+
+
+        for level, color in zip([1, 1.25, 1.5, 2], ["black", "red", "orange", "green"]):
+            plt.axhline(y=level, color=color, linestyle="-", linewidth=1, label=f"{level} sigma")
+            plt.axhline(y=-level, color=color, linestyle="-", linewidth=1)
+
         plt.xlabel("Fecha")
-        plt.ylabel("Spread")
-        plt.title(f"Modelo de Spread: {tickers[0]} vs {tickers[1]}")
+        plt.ylabel("Spread Normalizado")
+        plt.title(f"Spread Normalizado: {tickers[0]} vs {tickers[1]}")
         plt.legend()
         plt.grid()
         plt.show()
 
-    return spread
-
+    return spread, spread_norm
 
