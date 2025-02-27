@@ -37,6 +37,18 @@ def calcular_hedge_ratio_kalman(data):
     return pd.Series(hedge_ratios, index=data.index)
 
 
+def ultimo_hedge_ratio(hedge_ratios):
+    ultimo = hedge_ratios.iloc[-1]
+    print(f"\nHedge Ratio Fijo (Último Valor Estimado): {ultimo:.4f}")
+    return ultimo
+
+
+def promedio_hedge_ratio(hedge_ratios):
+        promedio = hedge_ratios.mean()
+        print(f"\nHedge Ratio Fijo (Valor Promedio): {promedio:.4f}")
+        return promedio
+
+
 def plot_hedge_ratio(hedge_ratios):
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.plot(hedge_ratios, label="Hedge Ratio (Kalman)", color="blue")
