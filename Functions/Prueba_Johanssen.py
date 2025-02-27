@@ -1,6 +1,10 @@
 import statsmodels.tsa.vector_ar.vecm as vecm
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.dates as mdates
+import seaborn as sns
+
+sns.set_style("darkgrid")
 
 def prueba_johansen(data, plot_spread=True):
 
@@ -25,7 +29,7 @@ def prueba_johansen(data, plot_spread=True):
     spread_norm = (spread - mu) / sigma
 
     if plot_spread:
-        plt.figure(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(12, 6))
         plt.plot(data.index, spread_norm, label="Spread Normalizado", color="blue")
 
 
@@ -33,11 +37,13 @@ def prueba_johansen(data, plot_spread=True):
             plt.axhline(y=level, color=color, linestyle="-", linewidth=1, label=f"{level} sigma")
             plt.axhline(y=-level, color=color, linestyle="-", linewidth=1)
 
-        plt.xlabel("Fecha")
-        plt.ylabel("Spread Normalizado")
-        plt.title(f"Spread Normalizado: {tickers[0]} vs {tickers[1]}")
-        plt.legend()
-        plt.grid()
+        ax.xaxis.set_major_locator(mdates.YearLocator(1))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+        ax.set_xlabel("Fecha")
+        ax.set_ylabel("Spread Normalizado")
+        ax.set_title(f"Spread Normalizado: {tickers[0]} vs {tickers[1]}")
+        ax.legend()
+        ax.grid(True, linestyle = "--", linewidth= 0.6, alpha=0.7)
         plt.show()
 
     return spread, spread_norm

@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import seaborn as sns
+
+sns.set_style("darkgrid")
 
 class KalmanFilterHedgeRatio:
     def __init__(self):
@@ -53,11 +56,12 @@ def plot_hedge_ratio(hedge_ratios):
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.plot(hedge_ratios, label="Hedge Ratio (Kalman)", color="blue")
 
+
     ax.set_xlabel("Fecha")
     ax.set_ylabel("Hedge Ratio")
     ax.set_title("Hedge Ratio estimado con Filtro de Kalman")
     ax.legend()
-    ax.grid()
+    ax.grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
 
     ax.xaxis.set_major_locator(mdates.YearLocator(1))
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
