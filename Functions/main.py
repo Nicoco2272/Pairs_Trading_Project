@@ -6,7 +6,7 @@ from Kalman_filter import (calcular_hedge_ratio_kalman, plot_hedge_ratio)  # Imp
 
 
 def main():
-    tickers = ["MA", "V"]
+    tickers = ["V", "MA"]
 
     data = descargar_datos(tickers)
     data_normalizada = normalizar_datos(data)

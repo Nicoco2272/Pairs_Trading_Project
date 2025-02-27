@@ -29,7 +29,7 @@ def prueba_johansen(data, plot_spread=True):
         plt.plot(data.index, spread_norm, label="Spread Normalizado", color="blue")
 
 
-        for level, color in zip([1, 1.25, 1.5, 2], ["black", "red", "orange", "green"]):
+        for level, color in zip([1.5], ["orange"]):
             plt.axhline(y=level, color=color, linestyle="-", linewidth=1, label=f"{level} sigma")
             plt.axhline(y=-level, color=color, linestyle="-", linewidth=1)
 
