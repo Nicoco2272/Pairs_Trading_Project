@@ -10,12 +10,15 @@ def descargar_datos(tickers):
     data = data[tickers]
     return data
 
+def normalizar_datos(data):
+    return (data - data.mean()) / data.std()
+
 def graficar_datos(data, tickers):
     fig, ax1 = plt.subplots(figsize=(12, 6))
 
     ax1.plot(data.index, data[tickers[0]], "blue", label=tickers[0])
     ax1.set_xlabel("Fecha")
-    ax1.set_ylabel(f"Precio {tickers[0]}")
+    ax1.set_ylabel(f"Precio Normalizado {tickers[0]}")
     ax1.tick_params(axis='y')
 
     ax1.xaxis.set_major_locator(mdates.YearLocator(1))
@@ -23,13 +26,12 @@ def graficar_datos(data, tickers):
 
     ax2 = ax1.twinx()
     ax2.plot(data.index, data[tickers[1]], "orange", label=tickers[1])
-    ax2.set_ylabel(f"Precio {tickers[1]}")
+    ax2.set_ylabel(f"Precio Normalizado {tickers[1]}")
     ax2.tick_params(axis='y')
 
     ax1.legend(loc="upper left")
     ax2.legend(loc="upper right")
 
     fig.tight_layout()
-    plt.title(f"Precios de {tickers[0]} y {tickers[1]}")
+    plt.title(f"Precios Normalizados de {tickers[0]} y {tickers[1]}")
     plt.show()
-
