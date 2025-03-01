@@ -41,7 +41,7 @@ def prueba_johansen(data, plot_spread=True):
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
         ax.set_xlabel("Fecha")
         ax.set_ylabel("Spread Normalizado")
-        ax.set_title(f"Spread Normalizado: {tickers[0]} vs {tickers[1]}")
+        ax.set_title("VECM Signals")
         ax.legend()
         ax.grid(True, linestyle = "--", linewidth= 0.6, alpha=0.7)
         plt.show()
