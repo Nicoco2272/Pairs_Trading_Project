@@ -51,6 +51,12 @@ def promedio_hedge_ratio(hedge_ratios):
         print(f"\nHedge Ratio Fijo (Valor Promedio): {promedio:.4f}")
         return promedio
 
+def generar_dataframe_hedge_ratio(data):
+    hedge_ratios = calcular_hedge_ratio_kalman(data)
+    df_hedge = data.copy()
+    df_hedge["Hedge Ratio"] = hedge_ratios
+
+    return df_hedge
 
 def plot_hedge_ratio(hedge_ratios):
     fig, ax = plt.subplots(figsize=(12, 6))

@@ -1,58 +1,123 @@
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import seaborn as sns
 
-sns.set_style("darkgrid")
+def ejecutar_backtesting(df_trades, tickers, spread_norm, hedge_ratios, capital_inicial=1_000_000, comision=0.00125,
+                         monto_trade=10_000, capital_minimo=250_000):
+    """
+    Ejecuta el backtesting de la estrategia evaluando fila por fila con estructuras condicionales y verificando disponibilidad de capital.
+    """
+    df_backtesting = df_trades.copy()
+    df_backtesting["Capital Actual"] = capital_inicial
+    df_backtesting["Ventas Long"] = 0.0
+    df_backtesting["Ventas Short"] = 0.0
+    df_backtesting["Gasto Long"] = 0.0
+    df_backtesting["Gasto Short"] = 0.0
+    df_backtesting["Capital Short " + tickers[0]] = 0.0
+    df_backtesting["Long shares " + tickers[0]] = 0
+    df_backtesting["Short shares " + tickers[0]] = 0
+    df_backtesting["Long shares " + tickers[1]] = 0
+    df_backtesting["Short shares " + tickers[1]] = 0
+    df_backtesting["Nuevo Capital"] = capital_inicial
 
-def simulate_trades(df_signal, data, initial_capital=1000000, commission=0.00125):
-    capital = initial_capital
-    positions = 0
-    equity_curve = []
-    capital_history = []
+    acciones_long_ticker0 = 0
+    acciones_long_ticker1 = 0
+    acciones_short_ticker0 = 0
+    acciones_short_ticker1 = 0
+    capital_actual = capital_inicial
+    capital_short_ticker0 = 0.0
 
-    for i in range(len(df_signal)):
-        signal = df_signal["Señales"].iloc[i]
-        price = data.mean(axis=1).iloc[i]
+    prev_index = None
 
-        if signal == 1:  # Señal de LONG
-            shares = capital / price
-            capital -= shares * price * (1 + commission)
-            positions += shares
-        elif signal == -1:  # Señal de SHORT
-            capital += positions * price * (1 - commission)
-            positions = 0  # Se cierra la posición
+    for index, row in df_backtesting.iterrows():
+        sigma = row["Sigma"]
 
-        total_value = capital + positions * price
-        equity_curve.append(total_value)
-        capital_history.append(capital)
+        if prev_index is not None:
+            capital_actual = df_backtesting.at[prev_index, "Nuevo Capital"]
+            capital_short_ticker0 = df_backtesting.at[prev_index, "Capital Short " + tickers[0]]
 
-    return pd.Series(equity_curve, index=data.index)
+        df_backtesting.at[index, "Capital Actual"] = capital_actual
+        df_backtesting.at[index, "Capital Short " + tickers[0]] = capital_short_ticker0
 
+        if sigma == "+1.5":  # Short Trade
+            n_shares_ticker1 = int(monto_trade / row[tickers[1]])
+            n_shares_ticker0 = int(n_shares_ticker1 / row["Hedge Ratio"])
 
-def calculate_performance_metrics(equity_curve):
-    returns = equity_curve.pct_change().dropna()
-    sharpe_ratio = returns.mean() / returns.std() * np.sqrt(252)
-    sortino_ratio = returns.mean() / returns[returns < 0].std() * np.sqrt(252)
-    max_drawdown = (equity_curve / equity_curve.cummax() - 1).min()
+            dinero_long = (n_shares_ticker1 * row[tickers[1]]) * (1 + comision)
+            dinero_short = (n_shares_ticker0 * row[tickers[0]]) * (1 - comision)
+            total_cost = dinero_long + dinero_short  # Ahora incluye también dinero_short
 
-    print(f"Sharpe Ratio: {sharpe_ratio:.4f}")
-    print(f"Sortino Ratio: {sortino_ratio:.4f}")
-    print(f"Max Drawdown: {max_drawdown:.4%}")
-    return sharpe_ratio, sortino_ratio, max_drawdown
+            if capital_actual - total_cost >= capital_minimo:
+                capital_actual -= total_cost  # Se descuenta tanto dinero_long como dinero_short
+                capital_short_ticker0 += dinero_short  # Se almacena el dinero recibido por el short
+                acciones_long_ticker1 += n_shares_ticker1
+                acciones_short_ticker0 += n_shares_ticker0
+            else:
+                n_shares_ticker1 = 0
+                n_shares_ticker0 = 0
+                dinero_long = 0
+                dinero_short = 0
 
+            df_backtesting.at[index, "Long shares UAL"] = n_shares_ticker1
+            df_backtesting.at[index, "Short shares DAL"] = n_shares_ticker0
+            df_backtesting.at[index, "Gasto Long"] = dinero_long
+            df_backtesting.at[index, "Gasto Short"] = dinero_short
 
-def plot_equity_curve(equity_curve):
+        elif sigma == "-1.5":  # Long Trade
+            n_shares_ticker0 = int(monto_trade / row[tickers[0]])
+            n_shares_ticker1 = int(n_shares_ticker0 / row["Hedge Ratio"])
 
-    plt.figure(figsize=(12, 6))
-    plt.plot(equity_curve, label="Equity Curve", color="blue")
-    ax = plt.gca()
-    ax.xaxis.set_major_locator(mdates.YearLocator(1))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
-    plt.xlabel("Fecha")
-    plt.ylabel("Capital")
-    plt.title("Evolución del Capital con el Tiempo")
-    plt.legend()
-    plt.grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
-    plt.show()
+            dinero_long = (n_shares_ticker0 * row[tickers[0]]) * (1 + comision)
+            dinero_short = (n_shares_ticker1 * row[tickers[1]]) * (1 - comision)
+            total_cost = dinero_long + dinero_short  # Ahora incluye también dinero_short
+
+            if capital_actual - total_cost >= capital_minimo:
+                capital_actual -= total_cost  # Se descuenta tanto dinero_long como dinero_short
+                capital_short_ticker0 += dinero_short  # Se almacena el dinero recibido por el short
+                acciones_long_ticker0 += n_shares_ticker0
+                acciones_short_ticker1 += n_shares_ticker1
+            else:
+                n_shares_ticker0 = 0
+                n_shares_ticker1 = 0
+                dinero_long = 0
+                dinero_short = 0
+
+            df_backtesting.at[index, "Long shares DAL"] = n_shares_ticker0
+            df_backtesting.at[index, "Short shares UAL"] = n_shares_ticker1
+            df_backtesting.at[index, "Gasto Long"] = dinero_long
+            df_backtesting.at[index, "Gasto Short"] = dinero_short
+
+        elif sigma == "0":  # Cierre de Posiciones
+            ventas_long = (((acciones_long_ticker0 * row[tickers[0]]) * (1 - comision)) +
+                           ((acciones_long_ticker1 * row[tickers[1]]) * (1 - comision)))
+
+            gasto_short = (((acciones_short_ticker0 * row[tickers[0]]) * (1 + comision)) +
+                           ((acciones_short_ticker1 * row[tickers[1]]) * (1 + comision)))
+
+            # Se usa el valor anterior de capital_short_ticker0 antes de ponerlo en 0
+            capital_actual = capital_actual + ventas_long + (capital_short_ticker0 - gasto_short)
+
+            df_backtesting.at[index, "Ventas Long"] = ventas_long
+            df_backtesting.at[index, "Ventas Short"] = gasto_short
+            df_backtesting.at[index, "Nuevo Capital"] = capital_actual
+
+            # Se mantiene el valor anterior en la misma fecha y se borra en la siguiente iteración
+            capital_short_ticker0 = 0.0
+
+            acciones_long_ticker0 = 0
+            acciones_long_ticker1 = 0
+            acciones_short_ticker0 = 0
+            acciones_short_ticker1 = 0
+
+        df_backtesting.at[index, "Nuevo Capital"] = capital_actual
+        df_backtesting.at[index, "Capital Short " + tickers[0]] = capital_short_ticker0
+        prev_index = index
+
+    # Renombrar columnas
+    df_backtesting = df_backtesting.rename(columns={
+        "Ventas Long": "Ventas de Long",
+        "Ventas Short": "Recompra de short",
+        "Gasto Long": "Transaccion Long",
+        "Gasto Short": "Transaccion short",
+        "Capital Short " + tickers[0]: "Dinero acumulado para recomprar short "
+    })
+
+    return df_backtesting

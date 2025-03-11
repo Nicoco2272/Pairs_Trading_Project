@@ -1,8 +1,37 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
+import pandas as pd
 
 sns.set_style("darkgrid")
+
+
+def generar_dataframe_trades(df_signal, tickers, spread_norm, hedge_ratios):
+    df_trades = df_signal.copy()
+    df_trades["Hedge Ratio"] = hedge_ratios
+    df_trades["Sigma"] = "N/A"
+    df_trades["Trade"] = "N/A"
+    df_trades["Accion_" + tickers[0]] = "N/A"
+    df_trades["Accion_" + tickers[1]] = "N/A"
+    df_trades["Cerrar Posicion"] = "N/A"
+
+    df_trades.loc[df_trades["Señales"] == 1, "Sigma"] = "-1.5"
+    df_trades.loc[df_trades["Señales"] == -1, "Sigma"] = "+1.5"
+
+    df_trades.loc[df_trades["Señales"] == 1, "Trade"] = "Long"
+    df_trades.loc[df_trades["Señales"] == -1, "Trade"] = "Short"
+
+    df_trades.loc[df_trades["Señales"] == 1, "Accion_" + tickers[0]] = "Long"
+    df_trades.loc[df_trades["Señales"] == 1, "Accion_" + tickers[1]] = "Short"
+    df_trades.loc[df_trades["Señales"] == -1, "Accion_" + tickers[0]] = "Short"
+    df_trades.loc[df_trades["Señales"] == -1, "Accion_" + tickers[1]] = "Long"
+
+    # Cerrar posiciones si el spread normalizado está cerca de 0
+    df_trades.loc[abs(spread_norm) < 0.05, "Cerrar Posicion"] = "Cerrar Posiciones"
+    df_trades.loc[abs(spread_norm) < 0.05, "Sigma"] = "0"
+
+    return df_trades
+
 
 def plot_prices_and_spread(data, spread_norm, df_signal, tickers, umbral=1.5):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True, gridspec_kw={'height_ratios': [2, 1]})
@@ -14,11 +43,11 @@ def plot_prices_and_spread(data, spread_norm, df_signal, tickers, umbral=1.5):
     # Señales LONG y SHORT para ambos activos
     ax1.scatter(df_signal.index[df_signal["Señales"] == 1],
                 data[tickers[0]][df_signal["Señales"] == 1],
-                color="green", marker="^", label=f"Long {tickers[0]}", alpha=1, s=80)
+                color="skyblue", marker="^", label=f"Long {tickers[0]}", alpha=1, s=80)
 
     ax1.scatter(df_signal.index[df_signal["Señales"] == 1],
                 data[tickers[1]][df_signal["Señales"] == 1],
-                color="red", marker="v", label=f"Short {tickers[1]}", alpha=1, s=80)
+                color="purple", marker="v", label=f"Short {tickers[1]}", alpha=1, s=80)
 
     ax1.scatter(df_signal.index[df_signal["Señales"] == -1],
                 data[tickers[0]][df_signal["Señales"] == -1],
