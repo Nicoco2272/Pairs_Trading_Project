@@ -15,16 +15,17 @@ def generar_dataframe_trades(df_signal, tickers, spread_norm, hedge_ratios):
     df_trades["Accion_" + tickers[1]] = "N/A"
     df_trades["Cerrar Posicion"] = "N/A"
 
+
     df_trades.loc[df_trades["Señales"] == 1, "Sigma"] = "-1.5"
     df_trades.loc[df_trades["Señales"] == -1, "Sigma"] = "+1.5"
 
     df_trades.loc[df_trades["Señales"] == 1, "Trade"] = "Long"
     df_trades.loc[df_trades["Señales"] == -1, "Trade"] = "Short"
 
-    df_trades.loc[df_trades["Señales"] == 1, "Accion_" + tickers[0]] = "Long"
-    df_trades.loc[df_trades["Señales"] == 1, "Accion_" + tickers[1]] = "Short"
-    df_trades.loc[df_trades["Señales"] == -1, "Accion_" + tickers[0]] = "Short"
-    df_trades.loc[df_trades["Señales"] == -1, "Accion_" + tickers[1]] = "Long"
+    df_trades.loc[df_trades["Señales"] == 1, "Accion_" + tickers[0]] = "Short" #Y
+    df_trades.loc[df_trades["Señales"] == 1, "Accion_" + tickers[1]] = "Long" #X
+    df_trades.loc[df_trades["Señales"] == -1, "Accion_" + tickers[0]] = "Long" #Y
+    df_trades.loc[df_trades["Señales"] == -1, "Accion_" + tickers[1]] = "Short" #X
 
     # Cerrar posiciones si el spread normalizado está cerca de 0
     df_trades.loc[abs(spread_norm) < 0.05, "Cerrar Posicion"] = "Cerrar Posiciones"
@@ -43,19 +44,19 @@ def plot_prices_and_spread(data, spread_norm, df_signal, tickers, umbral=1.5):
     # Señales LONG y SHORT para ambos activos
     ax1.scatter(df_signal.index[df_signal["Señales"] == 1],
                 data[tickers[0]][df_signal["Señales"] == 1],
-                color="skyblue", marker="^", label=f"Long {tickers[0]}", alpha=1, s=80)
+                color="skyblue", marker="v", label=f"Short {tickers[0]}", alpha=1, s=80) #Y Short
 
     ax1.scatter(df_signal.index[df_signal["Señales"] == 1],
                 data[tickers[1]][df_signal["Señales"] == 1],
-                color="purple", marker="v", label=f"Short {tickers[1]}", alpha=1, s=80)
+                color="purple", marker="^", label=f"Long {tickers[1]}", alpha=1, s=80) #X Long
 
     ax1.scatter(df_signal.index[df_signal["Señales"] == -1],
                 data[tickers[0]][df_signal["Señales"] == -1],
-                color="red", marker="v", label=f"Short {tickers[0]}", alpha=1, s=80)
+                color="green", marker="^", label=f"Long {tickers[0]}", alpha=1, s=80) #Y Long
 
     ax1.scatter(df_signal.index[df_signal["Señales"] == -1],
                 data[tickers[1]][df_signal["Señales"] == -1],
-                color="green", marker="^", label=f"Long {tickers[1]}", alpha=1, s=80)
+                color="red", marker="v", label=f"Short {tickers[1]}", alpha=1, s=80) #X Short
 
     ax1.set_ylabel("Precio")
     ax1.set_title(f"Precios de {tickers[0]} y {tickers[1]} con Señales de Trading")

@@ -5,6 +5,13 @@ import seaborn as sns
 
 sns.set_style("darkgrid")
 
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import seaborn as sns
+
+sns.set_style("darkgrid")
+
 def trading_signals (spread_norm, data, tickers):
 
     umbral = 1.5
@@ -79,7 +86,3 @@ def prices_signals(data, df_signal, tickers):
     ax.legend()
     ax.grid(True, linestyle="--", linewidth=0.6, alpha=0.7)
     plt.show()
-
-
-
-
