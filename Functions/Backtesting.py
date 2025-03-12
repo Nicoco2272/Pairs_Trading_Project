@@ -2,9 +2,7 @@ import pandas as pd
 
 def ejecutar_backtesting(df_trades, tickers, spread_norm, hedge_ratios, capital_inicial=1_000_000, comision=0.00125,
                          monto_trade=6_000, capital_minimo=250_000):
-    """
-    Ejecuta el backtesting de la estrategia evaluando fila por fila con estructuras condicionales y verificando disponibilidad de capital.
-    """
+
     df_backtesting = df_trades.copy()
     df_backtesting["Capital Actual"] = capital_inicial
     df_backtesting["Ventas Long"] = 0.0

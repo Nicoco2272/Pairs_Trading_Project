@@ -6,6 +6,7 @@ from Kalman_filter import (calcular_hedge_ratio_kalman, plot_hedge_ratio,ultimo_
 from Trading_signals import (trading_signals, spread_signals, prices_signals)
 from Backtesting import ejecutar_backtesting
 from Graficos_juntos import plot_prices_and_spread, generar_dataframe_trades
+from Valor_portafolio import plot_valor_portafolio
 
 def main():
     tickers = ["DAL","UAL"]
@@ -36,6 +37,7 @@ def main():
     df_backtesting = ejecutar_backtesting(df_trades, tickers, spread_norm, hedge_ratios)
     print(df_backtesting)
     #df_backtesting.to_csv("backtesting_results2.csv")
+    plot_valor_portafolio(df_backtesting)
 
 if __name__ == "__main__":
     main()
