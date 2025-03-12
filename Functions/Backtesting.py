@@ -1,7 +1,7 @@
 import pandas as pd
 
 def ejecutar_backtesting(df_trades, tickers, spread_norm, hedge_ratios, capital_inicial=1_000_000, comision=0.00125,
-                         monto_trade=10_000, capital_minimo=250_000):
+                         monto_trade=6_000, capital_minimo=250_000):
     """
     Ejecuta el backtesting de la estrategia evaluando fila por fila con estructuras condicionales y verificando disponibilidad de capital.
     """
@@ -38,6 +38,9 @@ def ejecutar_backtesting(df_trades, tickers, spread_norm, hedge_ratios, capital_
 
     # Nueva columna: Ganancia/Perdida activo short
     df_backtesting["Ganancia/Perdida activo short"] = 0.0
+
+    # Nueva columna: Valor Portafolio
+    df_backtesting["Valor Portafolio"] = 0.0
 
     acciones_long_ticker0 = 0
     acciones_long_ticker1 = 0
@@ -109,11 +112,9 @@ def ejecutar_backtesting(df_trades, tickers, spread_norm, hedge_ratios, capital_
             ventas_long = (((acciones_long_ticker0 * row[tickers[0]]) * (1 - comision)) +
                            ((acciones_long_ticker1 * row[tickers[1]]) * (1 - comision)))
 
-            gasto_short = (((acciones_short_ticker0 * row[tickers[0]]) * (1 + comision)) +
-                           ((acciones_short_ticker1 * row[tickers[1]]) * (1 + comision)))
+            gasto_short = (acciones_short_ticker0 * row[tickers[0]])  + (acciones_short_ticker1 * row[tickers[1]])
 
-            capital_actual = capital_actual + ventas_long + (capital_short_ticker0 - gasto_short)
-
+            capital_actual = capital_actual + ventas_long + (capital_short_ticker0 - (gasto_short * (1 - comision)))
             capital_short_ticker0 = 0.0
             capital_long_acumulado = 0.0
             acciones_long_ticker0 = 0
@@ -134,11 +135,14 @@ def ejecutar_backtesting(df_trades, tickers, spread_norm, hedge_ratios, capital_
         ganancia_perdida_short = capital_short_ticker0 - dinero_activos_short
         df_backtesting.at[index, "Ganancia/Perdida activo short"] = ganancia_perdida_short
 
+        # Calcular el Valor del Portafolio
+        df_backtesting.at[index, "Valor Portafolio"] = (
+            df_backtesting.at[index, "Nuevo Capital"] +
+            df_backtesting.at[index, "Dinero en activos Long a día de hoy"] +
+            df_backtesting.at[index, "Ganancia/Perdida activo short"]
+        )
+
         # Actualizar las columnas de acumulación
-        df_backtesting.at[index, "Long " + tickers[0] + " shares acumuladas"] = acciones_long_ticker0
-        df_backtesting.at[index, "Short " + tickers[0] + " shares acumuladas"] = acciones_short_ticker0
-        df_backtesting.at[index, "Long " + tickers[1] + " shares acumuladas"] = acciones_long_ticker1
-        df_backtesting.at[index, "Short " + tickers[1] + " shares acumuladas"] = acciones_short_ticker1
         df_backtesting.at[index, "Dinero acumulado Long"] = capital_long_acumulado
         df_backtesting.at[index, "Dinero acumulado Short"] = capital_short_ticker0
 

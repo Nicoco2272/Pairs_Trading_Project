@@ -31,12 +31,11 @@ def main():
 
     df_trades = generar_dataframe_trades(df_signal, tickers, spread_norm,hedge_ratios)
     print(df_trades)
-    #df_trades.to_csv("trading_trades_data.csv")
     plot_prices_and_spread(data, spread_norm, df_signal, tickers)
 
     df_backtesting = ejecutar_backtesting(df_trades, tickers, spread_norm, hedge_ratios)
     print(df_backtesting)
-    df_backtesting.to_csv("backtesting_results2.csv")
+    #df_backtesting.to_csv("backtesting_results2.csv")
 
 if __name__ == "__main__":
     main()
